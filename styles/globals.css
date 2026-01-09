@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens */
+:root {
+  --brand: #0ea5e9;
+}
+
+/* Base defaults */
+html, body { min-height: 100%; }

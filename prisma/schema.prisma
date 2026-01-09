@@ -1,0 +1,113 @@
+// ==============================
+//  Prisma Schema for Bhavin’s Academy
+//  Database: SQLite
+// ==============================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================
+// 🧑‍🎓 USER, SESSION & ENROLLMENT MODELS
+// ==============================
+
+model User {
+  id            Int           @id @default(autoincrement())
+  name          String?
+  email         String         @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Relations
+  sessions      Session[]
+  enrollments   Enrollment[]
+  activities    Activity[]
+}
+
+// 🔐 Authentication Session (NextAuth)
+model Session {
+  id           Int       @id @default(autoincrement())
+  sessionToken String    @unique
+  userId       Int
+  expires      DateTime
+
+  // Relations
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 🎓 Course Enrollment
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  courseId  Int
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+// ==============================
+// 📘 COURSE & LESSON MODELS
+// ==============================
+
+model Course {
+  id          Int           @id @default(autoincrement())
+  slug        String         @unique
+  title       String
+  description String
+  createdAt   DateTime       @default(now())
+
+  // Relations
+  lessons     Lesson[]
+  enrollments Enrollment[]
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  title     String
+  duration  String?
+  videoUrl  String?
+  textUrl   String?
+  isFree    Boolean  @default(false)
+
+  // Relations
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+// ==============================
+// 📊 ACTIVITY LOG MODEL
+// ==============================
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  type      String   // e.g. "ENROLL", "LOGIN", "VIEW_LESSON"
+  details   String?  // optional text info
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model Blog {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  title     String
+  content   String
+  author    String
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
