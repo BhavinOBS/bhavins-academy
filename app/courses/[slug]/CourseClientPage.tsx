@@ -6,7 +6,7 @@ import matter from "gray-matter";
 import { remark } from "remark";
 import html from "remark-html";
 
-export default function CourseClientPage({ course }) {
+export default function CourseClientPage({ course }: { course: CourseWithLessons }) {
   const [activeLesson, setActiveLesson] = useState(course.lessons[0]);
   const [markdownContent, setMarkdownContent] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
