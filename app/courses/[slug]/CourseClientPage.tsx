@@ -7,7 +7,7 @@ import { remark } from "remark";
 import html from "remark-html";
 import { Course, Lesson } from "@prisma/client";
 
-// ✅ Define a proper interface for the course prop
+// ✅ Define type
 interface CourseWithLessons extends Course {
   lessons: Lesson[];
 }
@@ -35,15 +35,17 @@ export default function CourseClientPage({ course }: { course: CourseWithLessons
 
   // ✅ Load lesson content (markdown/html)
   useEffect(() => {
-    if (activeLesson?.textUrl) {
-      fetch(activeLesson.textUrl)
-        .then((res) => res.text())
-        .then(async (data) => {
-          if (activeLesson.textUrl.endsWith(".md")) {
+    const loadLesson = async () => {
+      if (activeLesson?.textUrl) {
+        try {
+          const res = await fetch(activeLesson.textUrl);
+          const data = await res.text();
+
+          if (activeLesson.textUrl?.endsWith(".md")) {
             const { content } = matter(data);
             const processed = await remark().use(html).process(content);
             setMarkdownContent(processed.toString());
-          } else if (activeLesson.textUrl.endsWith(".html")) {
+          } else if (activeLesson.textUrl?.endsWith(".html")) {
             const cleanHTML = data
               .replace(/<!DOCTYPE[^>]*>/gi, "")
               .replace(/<html[^>]*>/gi, "")
@@ -54,10 +56,16 @@ export default function CourseClientPage({ course }: { course: CourseWithLessons
           } else {
             setMarkdownContent(`<pre>${data}</pre>`);
           }
-        });
-    } else {
-      setMarkdownContent(null);
-    }
+        } catch (err) {
+          console.error("Error loading lesson content:", err);
+          setMarkdownContent(null);
+        }
+      } else {
+        setMarkdownContent(null);
+      }
+    };
+
+    loadLesson();
   }, [activeLesson]);
 
   return (
