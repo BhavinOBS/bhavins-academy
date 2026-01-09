@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { course: string; file: string } }
-) {
+/**
+ * Example: /api/videos?course=M365-1&file=intro.mp4
+ */
+export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const course = searchParams.get("course");
@@ -22,11 +22,11 @@ export async function GET(
     }
 
     const fileBuffer = fs.readFileSync(videoPath);
-    const res = new NextResponse(fileBuffer);
-    res.headers.set("Content-Type", "video/mp4");
-    return res;
-  } catch (error) {
-    console.error("💥 Video API error:", error);
+    return new NextResponse(fileBuffer, {
+      headers: { "Content-Type": "video/mp4" },
+    });
+  } catch (err) {
+    console.error("💥 Video streaming failed:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
