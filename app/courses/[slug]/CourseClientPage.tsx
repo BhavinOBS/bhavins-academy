@@ -5,28 +5,33 @@ import SecureVideo from "@/components/SecureVideo";
 import matter from "gray-matter";
 import { remark } from "remark";
 import html from "remark-html";
+import { Course, Lesson } from "@prisma/client";
+
+// ✅ Define a proper interface for the course prop
+interface CourseWithLessons extends Course {
+  lessons: Lesson[];
+}
 
 export default function CourseClientPage({ course }: { course: CourseWithLessons }) {
   const [activeLesson, setActiveLesson] = useState(course.lessons[0]);
   const [markdownContent, setMarkdownContent] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
 
-    // ✅ Check enrollment status
-    useEffect(() => {
-      async function checkEnrollment() {
-        try {
-          const res = await fetch(`/api/enroll/status?courseSlug=${course.slug}`);
-          if (res.ok) {
-            const data = await res.json();
-            setIsEnrolled(data.enrolled);
-          }
-        } catch (err) {
-          console.error("Enrollment check failed:", err);
+  // ✅ Check enrollment status
+  useEffect(() => {
+    async function checkEnrollment() {
+      try {
+        const res = await fetch(`/api/enroll/status?courseSlug=${course.slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsEnrolled(data.enrolled);
         }
+      } catch (err) {
+        console.error("Enrollment check failed:", err);
       }
-      checkEnrollment();
-    }, [course.slug]);
-
+    }
+    checkEnrollment();
+  }, [course.slug]);
 
   // ✅ Load lesson content (markdown/html)
   useEffect(() => {
@@ -69,9 +74,7 @@ export default function CourseClientPage({ course }: { course: CourseWithLessons
           )
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg mb-4">
-              🔒 This lesson is locked.
-            </p>
+            <p className="text-gray-600 text-lg mb-4">🔒 This lesson is locked.</p>
             <p className="text-sm text-gray-500 mb-6">
               Enroll in this course to unlock all lessons.
             </p>
