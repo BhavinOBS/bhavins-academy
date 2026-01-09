@@ -26,19 +26,22 @@ export const authOptions: AuthOptions = {
         const isValid = await bcrypt.compare(credentials!.password, user.password);
         if (!isValid) throw new Error("Invalid password");
 
-        return { id: user.id, name: user.name, email: user.email };
+        // ✅ Convert ID to string for NextAuth
+        return { id: user.id.toString(), name: user.name, email: user.email };
       },
     }),
-    // ✅ Optional: keep Google sign-in support
+
+    // ✅ Optional Google Login
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  // ✅ Fix: use enum instead of string
+
   session: { strategy: "jwt" as SessionStrategy },
   secret: process.env.NEXTAUTH_SECRET,
   pages: { signIn: "/auth/signin" },
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) token.user = user;
