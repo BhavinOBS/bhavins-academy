@@ -8,8 +8,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // ==============================
@@ -62,15 +63,22 @@ model Enrollment {
 // ==============================
 
 model Course {
-  id          Int           @id @default(autoincrement())
-  slug        String         @unique
+  id          Int       @id @default(autoincrement())
   title       String
+  slug        String    @unique
   description String
-  createdAt   DateTime       @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  // Relations
-  lessons     Lesson[]
-  enrollments Enrollment[]
+  // ✅ Add these metadata fields
+  level     String?     // Beginner, Intermediate, Advanced
+  duration  String?     // e.g. "4 hours"
+  access    String?     // e.g. "Lifetime access"
+
+
+  // ✅ Relations
+  lessons       Lesson[]
+  enrollments   Enrollment[]
 }
 
 model Lesson {
